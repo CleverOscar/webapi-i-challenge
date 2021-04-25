@@ -12,78 +12,68 @@ server.get('/', (req,res) => {
     res.send('Welcome To ExpressJS');
 });
 
-server.get('/users', (req, res)=>{
+server.get('/api/users', (req, res) => {
     database.find().then(users => {
         console.log(users);
-        res.status(200).json(users)
-    }).catch(err => {
-        res.status(500).json({message: err.message})
-    })
+        res.status(200).json(users);
+    }).catch(err => res.status(500).json({message: err.message}))
 })
 
-server.get('/users/:id', (req, res) => {
-    const idVar = req.params.id;
+server.post('/api/users', (req, res) => {
+    const {newUser} = req.body;
 
-    database.findById(idVar)
-        .then(user => {
-            if(!user){
-                res.status(404).json({message: 'user does not exists'})
-            }else {
-                res.status(200).json(user)
-            }
-        })
-        .catch(err => 
-            {res.status(500).json({message: err.message})
-        })
-})
-
-
-server.post('/users', (req, res)=> {
-    const newUser = req.body;
-
-    console.log(newUser.name, newUser.bio);
-
-    if(!newUser.name || !newUser.bio){
-        res.status(500).json({message: "User name and Bio reqiured"})
-    } else{
+    if(!newUser.name || !newUser.bio) {
+        res.status(500).json({message: "User name and Bio required"})
+    }else {
         database.insert(newUser)
-        .then(user => {
-            res.status(201).json(user)
-        })
-        .catch(err => {
-            res.status(500).json({
-                message: err.message
+            .then(user => {
+                res.status(201).json(user)
             })
-        })
+            .catch(err => 
+                res.status(500).json({message: err.message}))
     }
+
 })
 
-server.put('/users/:id', (req, res)=>{
+server.get('/api/users/:id', (req, res) =>{
+
+    //to find the user, we need to store the id we pass into our function
+
     const {id} = req.params;
+
+    database.findById(id).then(user => {
+        if(!user){
+            res.status(404).json({message: "user does not exists"})
+        } else {
+            res.status(200).json(user)
+        }
+    }).catch(err => {res.status(500).json({message: err.message})})
+   
+})
+
+server.put('/api/users/:id', (req, res) => {
+    const {id} = req.params;
+
     const changes = req.body;
 
     database.update(id, changes)
         .then(id => {
             res.status(200).json(changes)
         })
-        .catch(err => res.status(500).json({
-            message: err.message
-        }))
-    
+        .catch(err => res.status(500).json({message: err.message}))
+
 })
 
-server.delete('/users/:id', (req, res)=> {
 
+server.delete('/api/users/:id', (req, res) => {
     const {id} = req.params;
 
-    database.remove(id)
-        .then(id => {
-            res.status(200).json(id)
-        })
-        .catch(err => {
-            res.status(500).json({message: err.message})
-        })
-     
+    database.remove(id).then(id => {
+        res.status(200).json(id)
+    }).catch(err => {
+        res.status(500).json({message: err.message})
+    })
+
 })
 
 
