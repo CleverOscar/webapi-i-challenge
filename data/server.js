@@ -13,26 +13,24 @@ server.get('/', (req,res) => {
 });
 
 server.get('/api/users', (req, res) => {
+    const sortUsers = req.query.sortby || 'id';  
+
     database.find().then(users => {
-        console.log(users);
-        res.status(200).json(users);
-    }).catch(err => res.status(500).json({message: err.message}))
+
+        const sortNames = users.sort((a,b) => (a[sortUsers] < b[sortUsers] ? -1 : 1))
+
+        res.status(200).json(sortNames);
+        })
+        .catch(err => res.status(500).json({message: err.message}))
+
 })
 
 server.post('/api/users', (req, res) => {
     const {newUser} = req.body;
 
-    if(!newUser.name || !newUser.bio) {
-        res.status(500).json({message: "User name and Bio required"})
-    }else {
-        database.insert(newUser)
-            .then(user => {
-                res.status(201).json(user)
-            })
-            .catch(err => 
-                res.status(500).json({message: err.message}))
-    }
+    console.log(newUser)
 
+   res.status(200).json(newUser)
 })
 
 server.get('/api/users/:id', (req, res) =>{
